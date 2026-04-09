@@ -304,45 +304,6 @@
     }
 
     /* ── Progress strip ── */
-    .progress-strip {
-      position: sticky;
-      top: 58px;
-      z-index: 90;
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      height: 36px;
-    }
-    .prog-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-    .prog-bar {
-      flex: 1;
-      height: 4px;
-      background: #e8ece9;
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .prog-fill {
-      height: 100%;
-      background: var(--amber);
-      border-radius: 2px;
-      width: 0%;
-      transition: width 0.4s ease;
-    }
-    .prog-pct {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--green);
-      min-width: 32px;
-      text-align: right;
-    }
 
     /* ── Actions ── */
     .actions {
@@ -498,11 +459,6 @@
 </header>
 
 <!-- Progress strip -->
-<div class="progress-strip">
-  <span class="prog-label">Form progress</span>
-  <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
-  <span class="prog-pct" id="progPct">0%</span>
-</div>
 
 <!-- Page -->
 <div class="page">
@@ -991,8 +947,6 @@
       + radioNames.filter(n => document.querySelector(`[name="${n}"]:checked`)).length;
     const total = textInputs.length + radioNames.length;
     const pct = total ? Math.round(filled / total * 100) : 0;
-    document.getElementById('progFill').style.width = pct + '%';
-    document.getElementById('progPct').textContent = pct + '%';
   }
   document.querySelectorAll('input, select, textarea').forEach(el => {
     el.addEventListener('input', calcProgress);
