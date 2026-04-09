@@ -284,6 +284,9 @@
       margin-bottom: 2px;
     }
     .up-hint { font-size: 10.5px; color: #bbb; }
+    .up-req  { font-size: 9.5px; color: #e53e3e; font-weight: 700; margin-left: 2px; }
+    .up-opt  { font-size: 9.5px; color: #aaa; margin-left: 3px; font-weight: 400; }
+    .upload-box.err { border-color: #e53e3e !important; background: #fff5f5 !important; }
     .up-file {
       font-size: 10.5px;
       color: var(--amber);
@@ -808,7 +811,7 @@
           <div class="upload-box" id="b_adf">
             <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_adf','aadhaar_front')" />
             <span class="up-icon">🪪</span>
-            <div class="up-name">Aadhaar Front</div>
+            <div class="up-name">Aadhaar Front<span class="up-req">*</span></div>
             <div class="up-hint">JPG, PNG, PDF</div>
             <div class="up-file" id="fn_aadhaar_front"></div>
           </div>
@@ -816,7 +819,7 @@
           <div class="upload-box" id="b_adb">
             <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_adb','aadhaar_back')" />
             <span class="up-icon">🪪</span>
-            <div class="up-name">Aadhaar Back</div>
+            <div class="up-name">Aadhaar Back<span class="up-req">*</span></div>
             <div class="up-hint">JPG, PNG, PDF</div>
             <div class="up-file" id="fn_aadhaar_back"></div>
           </div>
@@ -824,7 +827,7 @@
           <div class="upload-box" id="b_pan">
             <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_pan','pan_card')" />
             <span class="up-icon">🗂️</span>
-            <div class="up-name">PAN Card</div>
+            <div class="up-name">PAN Card<span class="up-req">*</span></div>
             <div class="up-hint">JPG, PNG, PDF</div>
             <div class="up-file" id="fn_pan_card"></div>
           </div>
@@ -832,7 +835,7 @@
           <div class="upload-box" id="b_chq">
             <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_chq','cancelled_cheque')" />
             <span class="up-icon">🏦</span>
-            <div class="up-name">Cancelled Cheque</div>
+            <div class="up-name">Cancelled Cheque<span class="up-req">*</span></div>
             <div class="up-hint">JPG, PNG, PDF</div>
             <div class="up-file" id="fn_cancelled_cheque"></div>
           </div>
@@ -840,7 +843,7 @@
           <div class="upload-box" id="b_pht">
             <input type="file" accept="image/*" onchange="onUpload(this,'b_pht','applicant_photo')" />
             <span class="up-icon">📷</span>
-            <div class="up-name">Applicant Photo</div>
+            <div class="up-name">Applicant Photo<span class="up-opt">Optional</span></div>
             <div class="up-hint">JPG or PNG</div>
             <div class="up-file" id="fn_applicant_photo"></div>
           </div>
@@ -848,9 +851,17 @@
           <div class="upload-box" id="b_frm">
             <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_frm','firm_registration')" />
             <span class="up-icon">📜</span>
-            <div class="up-name">Firm Registration</div>
+            <div class="up-name">Firm Registration<span class="up-opt">Optional</span></div>
             <div class="up-hint">JPG, PNG, PDF</div>
             <div class="up-file" id="fn_firm_registration"></div>
+          </div>
+
+          <div class="upload-box" id="b_adp">
+            <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_adp','address_proof')" />
+            <span class="up-icon">🏠</span>
+            <div class="up-name">Address Proof<span class="up-opt">Optional</span></div>
+            <div class="up-hint">If address differs from Aadhaar</div>
+            <div class="up-file" id="fn_address_proof"></div>
           </div>
 
         </div>
@@ -958,7 +969,9 @@
       return;
     }
     uploadedFiles[key] = f;
-    document.getElementById(boxId).classList.add('done');
+    const box = document.getElementById(boxId);
+    box.classList.add('done');
+    box.classList.remove('err');
     document.getElementById('fn_' + key).textContent = '✓ ' + f.name;
     calcProgress();
   }
@@ -985,6 +998,12 @@
     document.querySelectorAll('input[required]:not([type=radio]), select[required], textarea[required]').forEach(el => {
       el.classList.remove('err');
       if (!el.value.trim()) { el.classList.add('err'); ok = false; }
+    });
+    // Mandatory document uploads
+    [['b_adf','aadhaar_front'],['b_adb','aadhaar_back'],['b_pan','pan_card'],['b_chq','cancelled_cheque']].forEach(([boxId, key]) => {
+      const box = document.getElementById(boxId);
+      box.classList.remove('err');
+      if (!uploadedFiles[key]) { box.classList.add('err'); ok = false; }
     });
     return ok;
   }
@@ -1027,7 +1046,7 @@
       const data = {};
       new FormData(this).forEach((v, k) => { if (typeof v === 'string') data[k] = v; });
 
-      const fileKeys = ['aadhaar_front','aadhaar_back','pan_card','cancelled_cheque','applicant_photo','firm_registration'];
+      const fileKeys = ['aadhaar_front','aadhaar_back','pan_card','cancelled_cheque','applicant_photo','firm_registration','address_proof'];
       await Promise.all(fileKeys.map(async key => {
         const file = uploadedFiles[key];
         if (!file) return;
