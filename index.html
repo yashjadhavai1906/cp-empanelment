@@ -875,9 +875,8 @@
     <div class="loading-warn">Do not refresh or go back</div>
     <div class="loading-steps">
       <div class="loading-step" id="lstep1"><span class="dot"></span> Compressing documents</div>
-      <div class="loading-step" id="lstep2"><span class="dot"></span> Uploading to server</div>
-      <div class="loading-step" id="lstep3"><span class="dot"></span> Saving documents to Drive</div>
-      <div class="loading-step" id="lstep4"><span class="dot"></span> Saving to records</div>
+      <div class="loading-step" id="lstep2"><span class="dot"></span> Uploading documents</div>
+      <div class="loading-step" id="lstep3"><span class="dot"></span> Saving to records</div>
     </div>
   </div>
 </div>
@@ -926,7 +925,7 @@
     document.getElementById('gstField').style.display = r.value === 'Yes' ? 'flex' : 'none';
   }
 
-  /* Compress image via canvas (images only, PDFs skipped) */
+  /* Compress image via canvas */
   function compressImage(file) {
     if (!file.type.startsWith('image/')) return Promise.resolve(file);
     return new Promise(resolve => {
@@ -934,7 +933,7 @@
       const url = URL.createObjectURL(file);
       img.onload = () => {
         URL.revokeObjectURL(url);
-        const MAX = 900;
+        const MAX = 1100;
         let { width, height } = img;
         if (width > MAX || height > MAX) {
           if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
@@ -943,7 +942,7 @@
         const canvas = document.createElement('canvas');
         canvas.width = width; canvas.height = height;
         canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        canvas.toBlob(blob => resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })), 'image/jpeg', 0.65);
+        canvas.toBlob(blob => resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })), 'image/jpeg', 0.75);
       };
       img.src = url;
     });
@@ -962,17 +961,6 @@
     document.getElementById(boxId).classList.add('done');
     document.getElementById('fn_' + key).textContent = '✓ ' + f.name;
     calcProgress();
-  }
-
-  /* File → compressed → base64 */
-  async function fileToBase64(file) {
-    const processed = await compressImage(file);
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload  = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(processed);
-    });
   }
 
   /* Progress */
@@ -1001,14 +989,26 @@
     return ok;
   }
 
-  /* Submit */
+  /* File → compressed → base64 */
+  async function fileToBase64(file) {
+    const processed = await compressImage(file);
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(processed);
+    });
+  }
+
+  /* Loading steps */
   function setLoadStep(n) {
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 3; i++) {
       const el = document.getElementById('lstep' + i);
       el.className = 'loading-step' + (i < n ? ' done' : i === n ? ' active' : '');
     }
   }
 
+  /* Submit */
   document.getElementById('empForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     if (!validate()) { showToast('Please fill all required fields.', true); return; }
@@ -1018,11 +1018,9 @@
     document.getElementById('loadingOverlay').classList.add('show');
     setLoadStep(1);
 
-    // Fake-advance to later steps while server is working
     const stepTimers = [
-      setTimeout(() => setLoadStep(2), 1500),
-      setTimeout(() => setLoadStep(3), 3500),
-      setTimeout(() => setLoadStep(4), 6000)
+      setTimeout(() => setLoadStep(2), 3000),
+      setTimeout(() => setLoadStep(3), 15000)
     ];
 
     try {
@@ -1040,9 +1038,10 @@
       }
 
       const controller = new AbortController();
-      const fetchTimeout = setTimeout(() => controller.abort(), 180000); // 3-min timeout
+      const fetchTimeout = setTimeout(() => controller.abort(), 300000); // 5-min timeout
       const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data), signal: controller.signal });
       clearTimeout(fetchTimeout);
+
       let result;
       try { result = await res.json(); }
       catch(_) { throw new Error('Server returned non-JSON (status ' + res.status + ')'); }
@@ -1060,7 +1059,7 @@
       stepTimers.forEach(clearTimeout);
       document.getElementById('loadingOverlay').classList.remove('show');
       const msg = err.name === 'AbortError'
-        ? 'Submission timed out. The server is taking too long — please try again.'
+        ? 'Taking too long — check your internet connection and try again.'
         : 'Error: ' + (err.message || 'Unknown error');
       showToast(msg, true);
     } finally {
@@ -1068,7 +1067,7 @@
     }
   });
 
-  /* Reset (internal — no confirm, used after successful submit) */
+  /* Reset (internal) */
   function resetForm() {
     document.getElementById('empForm').reset();
     document.querySelectorAll('.upload-box').forEach(b => b.classList.remove('done'));
@@ -1078,7 +1077,7 @@
     calcProgress();
   }
 
-  /* Reset (Clear Form button — asks confirm) */
+  /* Reset (Clear Form button) */
   function doReset() {
     if (!confirm('Clear all form data?')) return;
     resetForm();
