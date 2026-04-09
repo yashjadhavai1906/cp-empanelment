@@ -791,31 +791,20 @@
 <div id="toast"></div>
 
 <script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxMPW-UomMMNxw0GdlCtB-6nEPwUgvpNcJlh2i1Na_AO1rLasMwn64Tln6jIfgRSyn7w/exec';
+
+  const uploadedFiles = {};
+
   /* Same as Current Address */
   document.getElementById('sameAddr').addEventListener('change', function () {
     const same = this.checked;
-    const fields = [
-      ['biz_address', '[name="res_address"]'],
-      ['biz_pincode', '[name="res_pincode"]'],
-      ['biz_city',    '[name="res_city"]']
-    ];
-    fields.forEach(([bizId, resSel]) => {
-      const bizEl = document.getElementById(bizId);
-      const resEl = document.querySelector(resSel);
-      if (same) {
-        bizEl.value = resEl.value;
-        bizEl.readOnly = true;
-        bizEl.style.background = 'var(--green-light)';
-        bizEl.style.color = 'var(--muted)';
-      } else {
-        bizEl.readOnly = false;
-        bizEl.style.background = '';
-        bizEl.style.color = '';
-      }
-    });
+    [['biz_address','[name="res_address"]'],['biz_pincode','[name="res_pincode"]'],['biz_city','[name="res_city"]']]
+      .forEach(([bizId, resSel]) => {
+        const b = document.getElementById(bizId), r = document.querySelector(resSel);
+        if (same) { b.value = r.value; b.readOnly = true; b.style.background = 'var(--green-light)'; b.style.color = 'var(--muted)'; }
+        else { b.readOnly = false; b.style.background = ''; b.style.color = ''; }
+      });
   });
-
-  /* If residence fields change while "same" is checked, sync */
   ['res_address','res_pincode','res_city'].forEach(name => {
     document.querySelector('[name="' + name + '"]').addEventListener('input', function () {
       if (document.getElementById('sameAddr').checked) {
@@ -830,15 +819,29 @@
     document.getElementById('gstField').style.display = r.value === 'Yes' ? 'flex' : 'none';
   }
 
-  /* Upload */
+  /* Upload — store file, update UI */
   function onUpload(input, boxId, key) {
     const f = input.files[0];
     if (!f) return;
+    if (f.size > 5 * 1024 * 1024) {
+      showToast('File too large. Max 5 MB per document.', true);
+      input.value = '';
+      return;
+    }
+    uploadedFiles[key] = f;
     document.getElementById(boxId).classList.add('done');
     document.getElementById('fn_' + key).textContent = '✓ ' + f.name;
-    const pan = document.querySelector('[name="pan"]').value.toUpperCase() || 'UNKNOWN';
-    console.log(`[Upload] gs://peoplehome-cp-documents/${pan}/${key}_${Date.now()}`);
     calcProgress();
+  }
+
+  /* File → base64 */
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 
   /* Progress */
@@ -868,24 +871,58 @@
   }
 
   /* Submit */
-  document.getElementById('empForm').addEventListener('submit', function(e) {
+  document.getElementById('empForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     if (!validate()) { showToast('Please fill all required fields.', true); return; }
-    const data = {};
-    new FormData(this).forEach((v, k) => data[k] = v);
-    console.log('[Submit]', data);
-    showToast('Application submitted successfully!');
-    setTimeout(doReset, 500);
+
+    const btn = this.querySelector('.btn-submit');
+    btn.disabled = true; btn.textContent = 'Uploading documents…';
+
+    try {
+      const data = {};
+      new FormData(this).forEach((v, k) => { if (typeof v === 'string') data[k] = v; });
+
+      const fileKeys = ['aadhaar_front','aadhaar_back','pan_card','cancelled_cheque','applicant_photo','firm_registration'];
+      for (const key of fileKeys) {
+        const file = uploadedFiles[key];
+        if (file) {
+          data[key + '_b64']  = await fileToBase64(file);
+          data[key + '_name'] = file.name;
+          data[key + '_mime'] = file.type;
+        }
+      }
+
+      const res    = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
+      const result = await res.json();
+
+      if (result.success) {
+        showToast('Application submitted successfully!');
+        setTimeout(resetForm, 600);
+      } else {
+        throw new Error(result.error || 'Submission failed');
+      }
+    } catch(err) {
+      console.error(err);
+      showToast('Submission failed. Check connection and try again.', true);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Submit Application';
+    }
   });
 
-  /* Reset */
-  function doReset() {
-    if (!confirm('Clear all form data?')) return;
+  /* Reset (internal — no confirm, used after successful submit) */
+  function resetForm() {
     document.getElementById('empForm').reset();
     document.querySelectorAll('.upload-box').forEach(b => b.classList.remove('done'));
     document.querySelectorAll('[id^="fn_"]').forEach(f => f.textContent = '');
     document.getElementById('gstField').style.display = 'none';
+    Object.keys(uploadedFiles).forEach(k => delete uploadedFiles[k]);
     calcProgress();
+  }
+
+  /* Reset (Clear Form button — asks confirm) */
+  function doReset() {
+    if (!confirm('Clear all form data?')) return;
+    resetForm();
   }
 
   /* Toast */
