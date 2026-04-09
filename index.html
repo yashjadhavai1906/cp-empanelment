@@ -1039,8 +1039,10 @@
         }
       }
 
-      const res    = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
-      const result = await res.json();
+      const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
+      let result;
+      try { result = await res.json(); }
+      catch(_) { throw new Error('Server returned non-JSON (status ' + res.status + ')'); }
 
       if (result.success) {
         stepTimers.forEach(clearTimeout);
@@ -1054,7 +1056,7 @@
       console.error(err);
       stepTimers.forEach(clearTimeout);
       document.getElementById('loadingOverlay').classList.remove('show');
-      showToast('Submission failed. Check connection and try again.', true);
+      showToast('Error: ' + (err.message || 'Unknown error'), true);
     } finally {
       btn.disabled = false;
     }
