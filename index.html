@@ -440,6 +440,43 @@
     @keyframes drawCheck { to { stroke-dashoffset: 0; } }
     .success-title { font-size: 18px; font-weight: 700; color: var(--green); margin-bottom: 6px; }
     .success-sub   { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* Loading overlay */
+    .loading-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6); z-index: 999;
+      align-items: center; justify-content: center;
+    }
+    .loading-overlay.show { display: flex; }
+    .loading-card {
+      background: #fff; border-radius: 20px;
+      padding: 36px 32px 32px; text-align: center;
+      width: 88%; max-width: 300px;
+    }
+    .spinner {
+      width: 54px; height: 54px;
+      border: 4px solid var(--green-light);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 18px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-title { font-size: 16px; font-weight: 700; color: var(--green-dark); margin-bottom: 4px; }
+    .loading-warn  { font-size: 12px; color: #c0392b; font-weight: 600; margin-bottom: 18px; }
+    .loading-steps { text-align: left; }
+    .loading-step  {
+      font-size: 13px; color: #bbb;
+      padding: 5px 0; display: flex; align-items: center; gap: 10px;
+    }
+    .loading-step .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #ddd; flex-shrink: 0; transition: background 0.3s;
+    }
+    .loading-step.active { color: var(--green); font-weight: 600; }
+    .loading-step.active .dot { background: var(--green); }
+    .loading-step.done { color: #aaa; }
+    .loading-step.done .dot { background: #aaa; }
   </style>
 </head>
 <body>
@@ -830,6 +867,21 @@
 </div>
 
 <!-- Success overlay -->
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-card">
+    <div class="spinner"></div>
+    <div class="loading-title">Submitting Application</div>
+    <div class="loading-warn">Do not refresh or go back</div>
+    <div class="loading-steps">
+      <div class="loading-step" id="lstep1"><span class="dot"></span> Compressing documents</div>
+      <div class="loading-step" id="lstep2"><span class="dot"></span> Uploading to server</div>
+      <div class="loading-step" id="lstep3"><span class="dot"></span> Generating KYC PDF</div>
+      <div class="loading-step" id="lstep4"><span class="dot"></span> Saving to records</div>
+    </div>
+  </div>
+</div>
+
 <div class="success-overlay" id="successOverlay">
   <div class="success-card">
     <div class="check-ring">
@@ -950,12 +1002,28 @@
   }
 
   /* Submit */
+  function setLoadStep(n) {
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById('lstep' + i);
+      el.className = 'loading-step' + (i < n ? ' done' : i === n ? ' active' : '');
+    }
+  }
+
   document.getElementById('empForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     if (!validate()) { showToast('Please fill all required fields.', true); return; }
 
     const btn = this.querySelector('.btn-submit');
-    btn.disabled = true; btn.textContent = 'Compressing files…';
+    btn.disabled = true;
+    document.getElementById('loadingOverlay').classList.add('show');
+    setLoadStep(1);
+
+    // Fake-advance to later steps while server is working
+    const stepTimers = [
+      setTimeout(() => setLoadStep(2), 2000),
+      setTimeout(() => setLoadStep(3), 5000),
+      setTimeout(() => setLoadStep(4), 18000)
+    ];
 
     try {
       const data = {};
@@ -970,12 +1038,13 @@
           data[key + '_mime'] = file.type.startsWith('image/') ? 'image/jpeg' : file.type;
         }
       }
-      btn.textContent = 'Saving application…';
 
       const res    = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
       const result = await res.json();
 
       if (result.success) {
+        stepTimers.forEach(clearTimeout);
+        document.getElementById('loadingOverlay').classList.remove('show');
         showSuccess();
         setTimeout(resetForm, 3000);
       } else {
@@ -983,9 +1052,11 @@
       }
     } catch(err) {
       console.error(err);
+      stepTimers.forEach(clearTimeout);
+      document.getElementById('loadingOverlay').classList.remove('show');
       showToast('Submission failed. Check connection and try again.', true);
     } finally {
-      btn.disabled = false; btn.textContent = 'Submit Application';
+      btn.disabled = false;
     }
   });
 
