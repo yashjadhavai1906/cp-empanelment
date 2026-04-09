@@ -843,7 +843,7 @@
           <div class="upload-box" id="b_pht">
             <input type="file" accept="image/*" onchange="onUpload(this,'b_pht','applicant_photo')" />
             <span class="up-icon">📷</span>
-            <div class="up-name">Applicant Photo<span class="up-opt">Optional</span></div>
+            <div class="up-name">DSA/Connector Photo<span class="up-req">*</span></div>
             <div class="up-hint">JPG or PNG</div>
             <div class="up-file" id="fn_applicant_photo"></div>
           </div>
@@ -1000,7 +1000,7 @@
       if (!el.value.trim()) { el.classList.add('err'); ok = false; }
     });
     // Mandatory document uploads
-    [['b_adf','aadhaar_front'],['b_adb','aadhaar_back'],['b_pan','pan_card'],['b_chq','cancelled_cheque']].forEach(([boxId, key]) => {
+    [['b_adf','aadhaar_front'],['b_adb','aadhaar_back'],['b_pan','pan_card'],['b_chq','cancelled_cheque'],['b_pht','applicant_photo']].forEach(([boxId, key]) => {
       const box = document.getElementById(boxId);
       box.classList.remove('err');
       if (!uploadedFiles[key]) { box.classList.add('err'); ok = false; }
