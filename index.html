@@ -277,11 +277,11 @@
       margin-bottom: 7px;
     }
     .up-icon svg {
-      width: 26px;
-      height: 26px;
-      stroke: #888;
+      width: 28px;
+      height: 28px;
+      stroke: #999;
       fill: none;
-      stroke-width: 1.6;
+      stroke-width: 1.5;
       stroke-linecap: round;
       stroke-linejoin: round;
       transition: stroke 0.2s;
@@ -492,6 +492,7 @@
     .loading-step.done { color: #aaa; }
     .loading-step.done .dot { background: #aaa; }
   </style>
+<script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 
@@ -821,7 +822,7 @@
 
           <div class="upload-box" id="b_adf">
             <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_adf','aadhaar_front')" />
-            <span class="up-icon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><path d="M14 10h4M14 14h3"/></svg></span>
+            <span class="up-icon"><i data-lucide="contact"></i></span>
             <div class="up-name">Aadhaar Front<span class="up-req">*</span></div>
             <div class="up-hint">JPG, PNG, PDF</div>
             <div class="up-file" id="fn_aadhaar_front"></div>
@@ -829,7 +830,7 @@
 
           <div class="upload-box" id="b_adb">
             <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_adb','aadhaar_back')" />
-            <span class="up-icon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 10h12M6 14h8"/></svg></span>
+            <span class="up-icon"><i data-lucide="fingerprint"></i></span>
             <div class="up-name">Aadhaar Back<span class="up-req">*</span></div>
             <div class="up-hint">JPG, PNG, PDF</div>
             <div class="up-file" id="fn_aadhaar_back"></div>
@@ -837,7 +838,7 @@
 
           <div class="upload-box" id="b_pan">
             <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_pan','pan_card')" />
-            <span class="up-icon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg></span>
+            <span class="up-icon"><i data-lucide="credit-card"></i></span>
             <div class="up-name">PAN Card<span class="up-req">*</span></div>
             <div class="up-hint">JPG, PNG, PDF</div>
             <div class="up-file" id="fn_pan_card"></div>
@@ -845,7 +846,7 @@
 
           <div class="upload-box" id="b_chq">
             <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_chq','cancelled_cheque')" />
-            <span class="up-icon"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 10h18M3 6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2"/><path d="M7 14h4M15 14h2"/></svg></span>
+            <span class="up-icon"><i data-lucide="landmark"></i></span>
             <div class="up-name">Cancelled Cheque<span class="up-req">*</span></div>
             <div class="up-hint">JPG, PNG, PDF</div>
             <div class="up-file" id="fn_cancelled_cheque"></div>
@@ -853,7 +854,7 @@
 
           <div class="upload-box" id="b_pht">
             <input type="file" accept="image/*" onchange="onUpload(this,'b_pht','applicant_photo')" />
-            <span class="up-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+            <span class="up-icon"><i data-lucide="camera"></i></span>
             <div class="up-name">DSA/Connector Photo<span class="up-req">*</span></div>
             <div class="up-hint">JPG or PNG</div>
             <div class="up-file" id="fn_applicant_photo"></div>
@@ -861,7 +862,7 @@
 
           <div class="upload-box" id="b_frm">
             <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_frm','firm_registration')" />
-            <span class="up-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></span>
+            <span class="up-icon"><i data-lucide="building-2"></i></span>
             <div class="up-name">Firm Registration<span class="up-opt">Optional</span></div>
             <div class="up-hint">JPG, PNG, PDF</div>
             <div class="up-file" id="fn_firm_registration"></div>
@@ -869,7 +870,7 @@
 
           <div class="upload-box" id="b_adp">
             <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_adp','address_proof')" />
-            <span class="up-icon"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21V12h6v9"/></svg></span>
+            <span class="up-icon"><i data-lucide="map-pin"></i></span>
             <div class="up-name">Address Proof<span class="up-opt">Optional</span></div>
             <div class="up-hint">If address differs from Aadhaar</div>
             <div class="up-file" id="fn_address_proof"></div>
@@ -1129,6 +1130,9 @@
     t.className = isErr ? 'err-toast show' : 'show';
     setTimeout(() => t.className = '', 3500);
   }
+
+  /* Init Lucide icons */
+  lucide.createIcons();
 
   /* Auto-uppercase */
   ['pan', 'gst_number'].forEach(n => {
