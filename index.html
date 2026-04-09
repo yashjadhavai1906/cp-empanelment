@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Channel Partner Empanelment — PeopleHome</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green:       #1a6b3c;
+      --green-dark:  #134f2c;
+      --green-light: #edf7f2;
+      --green-mid:   #c5e0cf;
+      --amber:       #f5a800;
+      --amber-light: #fff9ed;
+      --bg:          #f2f4f3;
+      --white:       #ffffff;
+      --text:        #1c1c1c;
+      --muted:       #7a7a7a;
+      --border:      #dde3de;
+      --input-bg:    #f8faf9;
+      --error:       #d93025;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Top Header ── */
+    .top-header {
+      background: var(--green-dark);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 58px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .top-header img {
+      height: 28px;
+      filter: brightness(0) invert(1);
+    }
+    .header-badge {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+    }
+
+    /* ── Page ── */
+    .page {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 28px 16px 80px;
+    }
+
+    /* ── Intro ── */
+    .intro {
+      background: var(--white);
+      border-radius: 12px;
+      border-top: 4px solid var(--green);
+      padding: 22px 24px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .intro h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--green);
+      line-height: 1.2;
+    }
+    .intro p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .req-note {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .req-note span { color: var(--error); }
+
+    /* ── Section Card ── */
+    .card {
+      background: var(--white);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .card-header {
+      background: var(--green);
+      padding: 13px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.2px;
+    }
+
+    .card-body { padding: 20px; }
+
+    /* ── Sub group ── */
+    .sub {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--green);
+      margin-bottom: 14px;
+      margin-top: 20px;
+      padding-bottom: 6px;
+      border-bottom: 1.5px solid var(--green-light);
+    }
+    .sub:first-child { margin-top: 0; }
+
+    /* ── Grid ── */
+    .g {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr 1fr;
+    }
+    .g3 { grid-template-columns: 1fr 1fr 1fr; }
+    .full { grid-column: 1 / -1; }
+
+    @media (max-width: 540px) {
+      .g, .g3 { grid-template-columns: 1fr; }
+      .full { grid-column: 1; }
+    }
+
+    /* ── Field ── */
+    .field { display: flex; flex-direction: column; gap: 5px; }
+
+    .field label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .req { color: var(--error); margin-left: 1px; }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 13px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      background: var(--input-bg);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      min-height: 44px; /* good touch target */
+    }
+    .field input::placeholder,
+    .field textarea::placeholder { color: #c2c8c3; }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--green);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(26,107,60,0.1);
+    }
+    .field input.err,
+    .field select.err,
+    .field textarea.err {
+      border-color: var(--error);
+      box-shadow: 0 0 0 3px rgba(217,48,37,0.08);
+    }
+    .field textarea { resize: vertical; min-height: 86px; line-height: 1.5; }
+
+    /* ── Pills ── */
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 2px; }
+    .pills input[type="radio"] { display: none; }
+    .pills label {
+      border: 1.5px solid var(--border);
+      border-radius: 22px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      background: var(--input-bg);
+      transition: all 0.15s;
+      user-select: none;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+    }
+    .pills label:active { transform: scale(0.97); }
+    .pills input[type="radio"]:checked + label {
+      border-color: var(--green);
+      background: var(--green-light);
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    /* ── Uploads ── */
+    .upload-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 480px) {
+      .upload-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .upload-box {
+      position: relative;
+      border: 1.5px dashed var(--border);
+      border-radius: 10px;
+      padding: 18px 10px 14px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--input-bg);
+      transition: border-color 0.2s, background 0.2s;
+      overflow: hidden;
+      min-height: 44px;
+    }
+    .upload-box input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .upload-box:hover {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+    .upload-box.done {
+      border-color: var(--amber);
+      border-style: solid;
+      background: var(--amber-light);
+    }
+
+    .up-icon {
+      font-size: 22px;
+      margin-bottom: 7px;
+      display: block;
+    }
+    .up-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 2px;
+    }
+    .up-hint { font-size: 10.5px; color: #bbb; }
+    .up-file {
+      font-size: 10.5px;
+      color: var(--amber);
+      font-weight: 600;
+      margin-top: 6px;
+      word-break: break-all;
+      line-height: 1.3;
+    }
+
+    /* ── Progress strip ── */
+    .progress-strip {
+      position: sticky;
+      top: 58px;
+      z-index: 90;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 36px;
+    }
+    .prog-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .prog-bar {
+      flex: 1;
+      height: 4px;
+      background: #e8ece9;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .prog-fill {
+      height: 100%;
+      background: var(--amber);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+    .prog-pct {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green);
+      min-width: 32px;
+      text-align: right;
+    }
+
+    /* ── Actions ── */
+    .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .btn-clear {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 22px;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      min-height: 44px;
+    }
+    .btn-clear:hover { background: var(--bg); }
+
+    .btn-submit {
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      padding: 12px 28px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      transition: background 0.15s;
+    }
+    .btn-submit:hover { background: var(--green-dark); }
+    .btn-submit::after { content: '→'; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: var(--text);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 999;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    #toast.err-toast { background: #7a1a1a; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="top-header">
+  <img src="../../references/Logo.png" alt="PeopleHome" />
+  <span class="header-badge">Channel Partner Empanelment</span>
+</header>
+
+<!-- Progress strip -->
+<div class="progress-strip">
+  <span class="prog-label">Form progress</span>
+  <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+  <span class="prog-pct" id="progPct">0%</span>
+</div>
+
+<!-- Page -->
+<div class="page">
+
+  <!-- Intro -->
+  <div class="intro">
+    <div>
+      <h1>Empanelment Application</h1>
+      <p>Fill in all sections to onboard a new channel partner.</p>
+    </div>
+    <span class="req-note"><span>*</span> Required</span>
+  </div>
+
+  <form id="empForm" novalidate>
+
+    <!-- 1 · RM & BM -->
+    <div class="card" id="s1">
+      <div class="card-header">
+        <div class="card-num">1</div>
+        <span class="card-title">RM & BM Details</span>
+      </div>
+      <div class="card-body">
+
+        <div class="g" style="margin-bottom:20px;">
+          <div class="field full">
+            <label>Branch <span class="req">*</span></label>
+            <select name="branch" required>
+              <option value="">Select branch</option>
+              <option>Mumbai - Andheri</option>
+              <option>Mumbai - Bandra</option>
+              <option>Mumbai - Thane</option>
+              <option>Pune - Kothrud</option>
+              <option>Pune - Wakad</option>
+              <option>Bangalore - Whitefield</option>
+              <option>Bangalore - Koramangala</option>
+              <option>Delhi - Connaught Place</option>
+              <option>Hyderabad - Gachibowli</option>
+              <option>Chennai - Anna Nagar</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sub">Relationship Manager</div>
+        <div class="g">
+          <div class="field">
+            <label>RM Name <span class="req">*</span></label>
+            <input type="text" name="rm_name" placeholder="Full name" required />
+          </div>
+          <div class="field">
+            <label>RM E-Code <span class="req">*</span></label>
+            <input type="text" name="rm_ecode" placeholder="e.g. PH1023" required />
+          </div>
+        </div>
+
+        <div class="sub">Business Manager</div>
+        <div class="g">
+          <div class="field">
+            <label>BM Name <span class="req">*</span></label>
+            <input type="text" name="bm_name" placeholder="Full name" required />
+          </div>
+          <div class="field">
+            <label>BM E-Code <span class="req">*</span></label>
+            <input type="text" name="bm_ecode" placeholder="e.g. PH0512" required />
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 2 · Partner Details -->
+    <div class="card" id="s2">
+      <div class="card-header">
+        <div class="card-num">2</div>
+        <span class="card-title">Channel Partner Details</span>
+      </div>
+      <div class="card-body">
+        <div class="g">
+          <div class="field full">
+            <label>Type of Sourcing <span class="req">*</span></label>
+            <div class="pills">
+              <input type="radio" name="sourcing_type" id="r_dsa" value="DSA" required />
+              <label for="r_dsa">DSA</label>
+              <input type="radio" name="sourcing_type" id="r_conn" value="Connector" />
+              <label for="r_conn">Connector</label>
+            </div>
+          </div>
+          <div class="field full">
+            <label>Firm Name <span class="req">*</span></label>
+            <input type="text" name="firm_name" placeholder="Registered firm or business name" required />
+          </div>
+          <div class="field">
+            <label>Individual / Proprietor Name <span class="req">*</span></label>
+            <input type="text" name="proprietor_name" placeholder="As per PAN card" required />
+          </div>
+          <div class="field">
+            <label>Date of Birth <span class="req">*</span></label>
+            <input type="date" name="dob" required />
+          </div>
+          <div class="field">
+            <label>Constitution <span class="req">*</span></label>
+            <select name="constitution" required>
+              <option value="">Select</option>
+              <option>Individual</option>
+              <option>Proprietor</option>
+              <option>Partnership</option>
+              <option>Private Limited</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>PAN Number <span class="req">*</span></label>
+            <input type="text" name="pan" placeholder="ABCDE1234F" maxlength="10" required />
+          </div>
+          <div class="field">
+            <label>Contact Number <span class="req">*</span></label>
+            <input type="tel" name="contact" placeholder="10-digit mobile" maxlength="10" required />
+          </div>
+          <div class="field">
+            <label>Email ID <span class="req">*</span></label>
+            <input type="email" name="cp_email" placeholder="Partner's email" required />
+          </div>
+          <div class="field">
+            <label>Business Vintage (Years) <span class="req">*</span></label>
+            <input type="number" name="business_vintage" placeholder="Years in business" min="0" required />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 · Address -->
+    <div class="card" id="s3">
+      <div class="card-header">
+        <div class="card-num">3</div>
+        <span class="card-title">Address Details</span>
+      </div>
+      <div class="card-body">
+
+        <div class="sub">Residence Address</div>
+        <div class="g">
+          <div class="field full">
+            <label>Full Address <span class="req">*</span></label>
+            <input type="text" name="res_address" placeholder="Street, locality" required />
+          </div>
+          <div class="field">
+            <label>Pincode <span class="req">*</span></label>
+            <input type="text" name="res_pincode" placeholder="6-digit pincode" maxlength="6" required />
+          </div>
+          <div class="field">
+            <label>City <span class="req">*</span></label>
+            <input type="text" name="res_city" placeholder="City" required />
+          </div>
+        </div>
+
+        <div class="sub" style="display:flex;align-items:center;gap:12px;">
+          Business Address
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;color:var(--muted);cursor:pointer;">
+            <input type="checkbox" id="sameAddr" style="width:15px;height:15px;accent-color:var(--green);cursor:pointer;" />
+            Same as Current Address
+          </label>
+        </div>
+        <div class="g">
+          <div class="field full">
+            <label>Full Address <span class="req">*</span></label>
+            <input type="text" name="biz_address" id="biz_address" placeholder="Street, locality" required />
+          </div>
+          <div class="field">
+            <label>Pincode <span class="req">*</span></label>
+            <input type="text" name="biz_pincode" id="biz_pincode" placeholder="6-digit pincode" maxlength="6" required />
+          </div>
+          <div class="field">
+            <label>City <span class="req">*</span></label>
+            <input type="text" name="biz_city" id="biz_city" placeholder="City" required />
+          </div>
+          <div class="field">
+            <label>Office Status <span class="req">*</span></label>
+            <select name="office_status" required>
+              <option value="">Select</option>
+              <option>Rented</option>
+              <option>Owned</option>
+              <option>No Office Setup</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 4 · Financial -->
+    <div class="card" id="s4">
+      <div class="card-header">
+        <div class="card-num">4</div>
+        <span class="card-title">Financial & Tax Details</span>
+      </div>
+      <div class="card-body">
+
+        <div class="sub">GST</div>
+        <div class="g">
+          <div class="field">
+            <label>GST Registered? <span class="req">*</span></label>
+            <div class="pills">
+              <input type="radio" name="gst_reg" id="r_gy" value="Yes" required onchange="toggleGST(this)" />
+              <label for="r_gy">Yes</label>
+              <input type="radio" name="gst_reg" id="r_gn" value="No" onchange="toggleGST(this)" />
+              <label for="r_gn">No</label>
+            </div>
+          </div>
+          <div class="field" id="gstField" style="display:none;">
+            <label>GST Number</label>
+            <input type="text" name="gst_number" placeholder="15-character GSTIN" maxlength="15" />
+          </div>
+        </div>
+
+        <div class="sub">Bank Details</div>
+        <div class="g">
+          <div class="field">
+            <label>Bank Name <span class="req">*</span></label>
+            <input type="text" name="bank_name" placeholder="e.g. HDFC Bank" required />
+          </div>
+          <div class="field">
+            <label>Branch / Location <span class="req">*</span></label>
+            <input type="text" name="bank_location" placeholder="Branch location" required />
+          </div>
+          <div class="field">
+            <label>Account Type <span class="req">*</span></label>
+            <div class="pills">
+              <input type="radio" name="acc_type" id="r_sav" value="Savings" required />
+              <label for="r_sav">Savings</label>
+              <input type="radio" name="acc_type" id="r_cur" value="Current" />
+              <label for="r_cur">Current</label>
+            </div>
+          </div>
+          <div class="field">
+            <label>Account Number <span class="req">*</span></label>
+            <input type="text" name="acc_number" placeholder="Bank account number" required />
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 5 · References -->
+    <div class="card" id="s5">
+      <div class="card-header">
+        <div class="card-num">5</div>
+        <span class="card-title">References</span>
+      </div>
+      <div class="card-body">
+
+        <div class="sub">Reference 1</div>
+        <div class="g g3">
+          <div class="field">
+            <label>Name <span class="req">*</span></label>
+            <input type="text" name="ref1_name" placeholder="Full name" required />
+          </div>
+          <div class="field">
+            <label>Company <span class="req">*</span></label>
+            <input type="text" name="ref1_company" placeholder="Organisation" required />
+          </div>
+          <div class="field">
+            <label>Contact <span class="req">*</span></label>
+            <input type="tel" name="ref1_contact" placeholder="Mobile number" maxlength="10" required />
+          </div>
+        </div>
+
+        <div class="sub">Reference 2</div>
+        <div class="g g3">
+          <div class="field">
+            <label>Name <span class="req">*</span></label>
+            <input type="text" name="ref2_name" placeholder="Full name" required />
+          </div>
+          <div class="field">
+            <label>Company <span class="req">*</span></label>
+            <input type="text" name="ref2_company" placeholder="Organisation" required />
+          </div>
+          <div class="field">
+            <label>Contact <span class="req">*</span></label>
+            <input type="tel" name="ref2_contact" placeholder="Mobile number" maxlength="10" required />
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 6 · Assessment -->
+    <div class="card" id="s6">
+      <div class="card-header">
+        <div class="card-num">6</div>
+        <span class="card-title">BM Assessment</span>
+      </div>
+      <div class="card-body">
+        <div class="g">
+          <div class="field full">
+            <label>BM Recommendation <span class="req">*</span></label>
+            <textarea name="bm_rec" placeholder="Key observations and strengths about this channel partner..." required></textarea>
+          </div>
+          <div class="field full">
+            <label>Business Potential <span class="req">*</span></label>
+            <textarea name="biz_potential" placeholder="Estimated monthly business value this partner can source..." required></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7 · Documents -->
+    <div class="card" id="s7">
+      <div class="card-header">
+        <div class="card-num">7</div>
+        <span class="card-title">Document Uploads</span>
+      </div>
+      <div class="card-body">
+        <div class="upload-grid">
+
+          <div class="upload-box" id="b_adf">
+            <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_adf','aadhaar_front')" />
+            <span class="up-icon">🪪</span>
+            <div class="up-name">Aadhaar Front</div>
+            <div class="up-hint">JPG, PNG, PDF</div>
+            <div class="up-file" id="fn_aadhaar_front"></div>
+          </div>
+
+          <div class="upload-box" id="b_adb">
+            <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_adb','aadhaar_back')" />
+            <span class="up-icon">🪪</span>
+            <div class="up-name">Aadhaar Back</div>
+            <div class="up-hint">JPG, PNG, PDF</div>
+            <div class="up-file" id="fn_aadhaar_back"></div>
+          </div>
+
+          <div class="upload-box" id="b_pan">
+            <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_pan','pan_card')" />
+            <span class="up-icon">🗂️</span>
+            <div class="up-name">PAN Card</div>
+            <div class="up-hint">JPG, PNG, PDF</div>
+            <div class="up-file" id="fn_pan_card"></div>
+          </div>
+
+          <div class="upload-box" id="b_chq">
+            <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_chq','cancelled_cheque')" />
+            <span class="up-icon">🏦</span>
+            <div class="up-name">Cancelled Cheque</div>
+            <div class="up-hint">JPG, PNG, PDF</div>
+            <div class="up-file" id="fn_cancelled_cheque"></div>
+          </div>
+
+          <div class="upload-box" id="b_pht">
+            <input type="file" accept="image/*" onchange="onUpload(this,'b_pht','applicant_photo')" />
+            <span class="up-icon">📷</span>
+            <div class="up-name">Applicant Photo</div>
+            <div class="up-hint">JPG or PNG</div>
+            <div class="up-file" id="fn_applicant_photo"></div>
+          </div>
+
+          <div class="upload-box" id="b_frm">
+            <input type="file" accept="image/*,.pdf" onchange="onUpload(this,'b_frm','firm_registration')" />
+            <span class="up-icon">📜</span>
+            <div class="up-name">Firm Registration</div>
+            <div class="up-hint">JPG, PNG, PDF</div>
+            <div class="up-file" id="fn_firm_registration"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button type="button" class="btn-clear" onclick="doReset()">Clear Form</button>
+      <button type="submit" class="btn-submit">Submit Application</button>
+    </div>
+
+  </form>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+  /* Same as Current Address */
+  document.getElementById('sameAddr').addEventListener('change', function () {
+    const same = this.checked;
+    const fields = [
+      ['biz_address', '[name="res_address"]'],
+      ['biz_pincode', '[name="res_pincode"]'],
+      ['biz_city',    '[name="res_city"]']
+    ];
+    fields.forEach(([bizId, resSel]) => {
+      const bizEl = document.getElementById(bizId);
+      const resEl = document.querySelector(resSel);
+      if (same) {
+        bizEl.value = resEl.value;
+        bizEl.readOnly = true;
+        bizEl.style.background = 'var(--green-light)';
+        bizEl.style.color = 'var(--muted)';
+      } else {
+        bizEl.readOnly = false;
+        bizEl.style.background = '';
+        bizEl.style.color = '';
+      }
+    });
+  });
+
+  /* If residence fields change while "same" is checked, sync */
+  ['res_address','res_pincode','res_city'].forEach(name => {
+    document.querySelector('[name="' + name + '"]').addEventListener('input', function () {
+      if (document.getElementById('sameAddr').checked) {
+        const map = { res_address: 'biz_address', res_pincode: 'biz_pincode', res_city: 'biz_city' };
+        document.getElementById(map[name]).value = this.value;
+      }
+    });
+  });
+
+  /* GST toggle */
+  function toggleGST(r) {
+    document.getElementById('gstField').style.display = r.value === 'Yes' ? 'flex' : 'none';
+  }
+
+  /* Upload */
+  function onUpload(input, boxId, key) {
+    const f = input.files[0];
+    if (!f) return;
+    document.getElementById(boxId).classList.add('done');
+    document.getElementById('fn_' + key).textContent = '✓ ' + f.name;
+    const pan = document.querySelector('[name="pan"]').value.toUpperCase() || 'UNKNOWN';
+    console.log(`[Upload] gs://peoplehome-cp-documents/${pan}/${key}_${Date.now()}`);
+    calcProgress();
+  }
+
+  /* Progress */
+  function calcProgress() {
+    const textInputs = [...document.querySelectorAll('input[required]:not([type=radio]), select[required], textarea[required]')];
+    const radioNames = [...new Set([...document.querySelectorAll('input[type=radio][required]')].map(r => r.name))];
+    const filled = textInputs.filter(i => i.value.trim()).length
+      + radioNames.filter(n => document.querySelector(`[name="${n}"]:checked`)).length;
+    const total = textInputs.length + radioNames.length;
+    const pct = total ? Math.round(filled / total * 100) : 0;
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progPct').textContent = pct + '%';
+  }
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    el.addEventListener('input', calcProgress);
+    el.addEventListener('change', calcProgress);
+  });
+
+  /* Validate */
+  function validate() {
+    let ok = true;
+    document.querySelectorAll('input[required]:not([type=radio]), select[required], textarea[required]').forEach(el => {
+      el.classList.remove('err');
+      if (!el.value.trim()) { el.classList.add('err'); ok = false; }
+    });
+    return ok;
+  }
+
+  /* Submit */
+  document.getElementById('empForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!validate()) { showToast('Please fill all required fields.', true); return; }
+    const data = {};
+    new FormData(this).forEach((v, k) => data[k] = v);
+    console.log('[Submit]', data);
+    showToast('Application submitted successfully!');
+    setTimeout(doReset, 500);
+  });
+
+  /* Reset */
+  function doReset() {
+    if (!confirm('Clear all form data?')) return;
+    document.getElementById('empForm').reset();
+    document.querySelectorAll('.upload-box').forEach(b => b.classList.remove('done'));
+    document.querySelectorAll('[id^="fn_"]').forEach(f => f.textContent = '');
+    document.getElementById('gstField').style.display = 'none';
+    calcProgress();
+  }
+
+  /* Toast */
+  function showToast(msg, isErr) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = isErr ? 'err-toast show' : 'show';
+    setTimeout(() => t.className = '', 3500);
+  }
+
+  /* Auto-uppercase */
+  ['pan', 'gst_number'].forEach(n => {
+    const el = document.querySelector(`[name="${n}"]`);
+    if (el) el.addEventListener('input', () => { el.value = el.value.toUpperCase(); });
+  });
+</script>
+</body>
+</html>
