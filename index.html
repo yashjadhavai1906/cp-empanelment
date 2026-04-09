@@ -933,7 +933,7 @@
       const url = URL.createObjectURL(file);
       img.onload = () => {
         URL.revokeObjectURL(url);
-        const MAX = 1100;
+        const MAX = 800;
         let { width, height } = img;
         if (width > MAX || height > MAX) {
           if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
@@ -942,7 +942,7 @@
         const canvas = document.createElement('canvas');
         canvas.width = width; canvas.height = height;
         canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        canvas.toBlob(blob => resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })), 'image/jpeg', 0.75);
+        canvas.toBlob(blob => resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })), 'image/jpeg', 0.70);
       };
       img.src = url;
     });
@@ -952,8 +952,8 @@
   function onUpload(input, boxId, key) {
     const f = input.files[0];
     if (!f) return;
-    if (!f.type.startsWith('image/') && f.size > 10 * 1024 * 1024) {
-      showToast('PDF too large. Max 10 MB.', true);
+    if (!f.type.startsWith('image/') && f.size > 3 * 1024 * 1024) {
+      showToast('PDF too large. Max 3 MB. Please scan at lower quality.', true);
       input.value = '';
       return;
     }
@@ -1028,23 +1028,25 @@
       new FormData(this).forEach((v, k) => { if (typeof v === 'string') data[k] = v; });
 
       const fileKeys = ['aadhaar_front','aadhaar_back','pan_card','cancelled_cheque','applicant_photo','firm_registration'];
-      for (const key of fileKeys) {
+      await Promise.all(fileKeys.map(async key => {
         const file = uploadedFiles[key];
-        if (file) {
-          data[key + '_b64']  = await fileToBase64(file);
-          data[key + '_name'] = file.name.replace(/\.[^.]+$/, file.type.startsWith('image/') ? '.jpg' : ('.' + file.name.split('.').pop()));
-          data[key + '_mime'] = file.type.startsWith('image/') ? 'image/jpeg' : file.type;
-        }
-      }
+        if (!file) return;
+        data[key + '_b64']  = await fileToBase64(file);
+        data[key + '_name'] = file.name.replace(/\.[^.]+$/, file.type.startsWith('image/') ? '.jpg' : ('.' + file.name.split('.').pop()));
+        data[key + '_mime'] = file.type.startsWith('image/') ? 'image/jpeg' : file.type;
+      }));
 
       const controller = new AbortController();
-      const fetchTimeout = setTimeout(() => controller.abort(), 300000); // 5-min timeout
+      const fetchTimeout = setTimeout(() => controller.abort(), 180000); // 3-min timeout
       const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data), signal: controller.signal });
       clearTimeout(fetchTimeout);
 
       let result;
       try { result = await res.json(); }
-      catch(_) { throw new Error('Server returned non-JSON (status ' + res.status + ')'); }
+      catch(_) {
+        const text = await res.text().catch(() => '');
+        throw new Error('Server error (status ' + res.status + '). ' + (text.slice(0,100) || 'No details.'));
+      }
 
       if (result.success) {
         stepTimers.forEach(clearTimeout);
